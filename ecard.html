@@ -235,7 +235,7 @@ function ecB64u(u){var s='';for(var i=0;i<u.length;i++)s+=String.fromCharCode(u[
 function ecUnb64u(s){s=String(s).replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
 function ecDeflate(u){var cs=new CompressionStream('deflate-raw');return new Response(new Blob([u]).stream().pipeThrough(cs)).arrayBuffer().then(function(ab){return new Uint8Array(ab);});}
 /* カードの中身 → URLの # のうしろ（だんだん あらくして、QRに入る長さにする） */
-function ecEncode(D,maxLen){maxLen=maxLen||1500;var lv=[[0.9,1],[1.5,2],[2.5,3],[4,4],[6,5],[9,6]],i=0;
+function ecEncode(D,maxLen){maxLen=maxLen||1500;var lv=[[0.9,1],[1.2,1],[1.5,2],[2,2],[2.5,3],[3,3],[4,4],[6,5],[9,6]],i=0; /* round122：だんかいを こまかく */
   function next(){var L=lv[Math.min(i,lv.length-1)];return ecDeflate(ecPack(D,L[0],L[1])).then(function(z){var t='1'+ecB64u(z);
     if(t.length<=maxLen||i>=lv.length-1)return t;i++;return next();});}
   return next();}
@@ -278,7 +278,7 @@ function ecUnpack(u){var i=0;
   for(var k=0;k<n&&k<400;k++){var cb=byte(),ci=cb&63,col=EC_PAL[ci]||'#2a2a36';if(ci===63){var r=byte(),g=byte(),b=byte();col='#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('');}
     if(cb&128){list.push({fill:true,color:col,x:v()*q,y:v()*q});continue;}
     var size=v(),np=v(),pts=[],lx=0,ly=0;for(var j=0;j<np&&j<4000;j++){lx+=v();ly+=v();pts.push([lx*q,ly*q]);}if(!pts.length)pts=[[0,0]];
-    if(q>=2&&pts.length>=3)pts=ecSmooth(pts,q>=4?3:2); /* round121：あらく つめた 線を なめらかに */
+    if(q>=3&&pts.length>=3)pts=ecSmooth(pts,q>=5?2:1); /* round121：あらく つめた 線を なめらかに */
     list.push({color:col,size:Math.max(2,Math.min(60,size)),pts:pts,erase:!!(cb&64)});}
   if(i<u.length){try{D.pw=v()/10;D.sn=str();}catch(e){}}if(i<u.length){try{D.no=v();D.fl=v();}catch(e){}}D.strokes=list;return D;}
 function ecDecode(hash){var h=String(hash||'').replace(/^#/,'');if(h.charAt(0)!=='1')return Promise.reject(new Error('fmt'));
