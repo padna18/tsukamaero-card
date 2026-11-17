@@ -62,8 +62,9 @@ var ATTR={
 };
 function hexRgb(h){return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];}
 function floodFill(ctx,sx,sy,hex,lim){
-  sx=Math.floor(clamp(sx,0,599));sy=Math.floor(clamp(sy,0,599));
-  var img=ctx.getImageData(0,0,600,600),d=img.data,Wd=600,Hd=600,o=(sy*Wd+sx)*4;
+  var KS=(ctx.canvas&&ctx.canvas.width>600)?ctx.canvas.width/600:1,Wd=Math.round(600*KS),Hd=Wd,KK=KS*KS;
+  sx=Math.floor(clamp(sx*KS,0,Wd-1));sy=Math.floor(clamp(sy*KS,0,Hd-1));
+  var img=ctx.getImageData(0,0,Wd,Hd),d=img.data,o=(sy*Wd+sx)*4;
   var r0=d[o],g0=d[o+1],b0=d[o+2],a0=d[o+3],col=hexRgb(hex);
   if(a0>200&&Math.abs(r0-col[0])+Math.abs(g0-col[1])+Math.abs(b0-col[2])<12)return 0;
   function match0(i){var a=d[i+3];if(a0<40)return a<110;return a>=110&&Math.abs(d[i]-r0)+Math.abs(d[i+1]-g0)+Math.abs(d[i+2]-b0)<90;}
@@ -79,19 +80,19 @@ function floodFill(ctx,sx,sy,hex,lim){
   function grow(m,k,lim2){for(var p=0;p<k;p++){var m2=m.slice();for(var yy=1;yy<Hd-1;yy++)for(var xx=1;xx<Wd-1;xx++){var q=yy*Wd+xx;if(!m[q]&&(!lim2||lim2[q])&&(m[q-1]||m[q+1]||m[q-Wd]||m[q+Wd]))m2[q]=1;}m=m2;}return m;}
   var R=flood(ok),mask=R.m,cnt=R.n;
   function edge(m){for(var e=0;e<Wd;e++){if(m[e]||m[(Hd-1)*Wd+e]||m[e*Wd]||m[e*Wd+Wd-1])return true;}return false;}
-  if(!(lim>0)&&cnt>360000*0.45&&edge(mask)){
-    for(var k0=1;k0<=4;k0++){var wl=new Uint8Array(Wd*Hd);for(var j3=0;j3<wl.length;j3++)wl[j3]=ok[j3]?0:1;wl=grow(wl,k0);
+  if(!(lim>0)&&cnt>Wd*Hd*0.45&&edge(mask)){
+    for(var k0=1;k0<=4;k0++){var wl=new Uint8Array(Wd*Hd);for(var j3=0;j3<wl.length;j3++)wl[j3]=ok[j3]?0:1;wl=grow(wl,Math.round(k0*KS));
       var ok3=new Uint8Array(Wd*Hd);for(var j4=0;j4<ok3.length;j4++)ok3[j4]=ok[j4]&&!wl[j4]?1:0;var R3=flood(ok3);
-      if(R3.n>0&&R3.n<cnt*0.5&&!edge(R3.m)){mask=grow(R3.m,k0,ok);cnt=R3.n;break;}}}
-  else if(lim>0&&cnt>lim*1.15+600){ /* round116：もれた → すきまを ふさいで やりなおす */
-    var best=null;for(var k=1;k<=4&&!best;k++){var wall=new Uint8Array(Wd*Hd);for(var j1=0;j1<wall.length;j1++)wall[j1]=ok[j1]?0:1;wall=grow(wall,k);
+      if(R3.n>0&&R3.n<cnt*0.5&&!edge(R3.m)){mask=grow(R3.m,Math.round(k0*KS),ok);cnt=R3.n;break;}}}
+  else if(lim>0&&cnt>(lim*1.15+600)*KK){ /* round116：もれた → すきまを ふさいで やりなおす */
+    var best=null;for(var k=1;k<=4&&!best;k++){var wall=new Uint8Array(Wd*Hd);for(var j1=0;j1<wall.length;j1++)wall[j1]=ok[j1]?0:1;wall=grow(wall,Math.round(k*KS));
       var ok2=new Uint8Array(Wd*Hd);for(var j2=0;j2<ok2.length;j2++)ok2[j2]=ok[j2]&&!wall[j2]?1:0;var R2=flood(ok2);
-      if(R2.n>0&&R2.n<=lim*1.15+600)best=grow(R2.m,k,ok);}
+      if(R2.n>0&&R2.n<=(lim*1.15+600)*KK)best=grow(R2.m,Math.round(k*KS),ok);}
     if(!best)return 0;mask=best;}
   // grow 2px so the soft edges of lines don't leave a gap
-  for(var pass=0;pass<2;pass++){var m2=mask.slice();for(var yy=1;yy<Hd-1;yy++)for(var xx=1;xx<Wd-1;xx++){var k=yy*Wd+xx;if(!mask[k]&&(mask[k-1]||mask[k+1]||mask[k-Wd]||mask[k+Wd]))m2[k]=1;}mask=m2;}
+  for(var pass=0;pass<Math.round(2*KS);pass++){var m2=mask.slice();for(var yy=1;yy<Hd-1;yy++)for(var xx=1;xx<Wd-1;xx++){var k=yy*Wd+xx;if(!mask[k]&&(mask[k-1]||mask[k+1]||mask[k-Wd]||mask[k+Wd]))m2[k]=1;}mask=m2;}
   for(var j=0;j<mask.length;j++)if(mask[j]){var q=j*4;d[q]=col[0];d[q+1]=col[1];d[q+2]=col[2];d[q+3]=255;}
-  ctx.putImageData(img,0,0);return cnt;
+  ctx.putImageData(img,0,0);return Math.round(cnt/KK);
 }
 function drawStrokeOn(ctx,s){if(s.erase&&!s.__e){ctx.save();ctx.globalCompositeOperation='destination-out';s.__e=1;try{drawStrokeOn(ctx,s);}finally{s.__e=0;ctx.restore();}return;}if(s.fill){var fn=floodFill(ctx,s.x,s.y,s.color,s.n);if(!(s.n>0)&&fn>0)s.n=fn;return;}
   ctx.strokeStyle=s.color;ctx.fillStyle=s.color;ctx.lineWidth=s.size;ctx.lineCap='round';ctx.lineJoin='round';
@@ -211,6 +212,12 @@ var EC_PAL=['#e8443a','#ff9f1c','#ffd23f','#3bb273','#2f9bd6','#7b5cd6','#ff7eb6
 function ecRdp(pts,eps){if(pts.length<3)return pts.slice();var a=pts[0],b=pts[pts.length-1],dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1e-6,best=-1,bi=0;
   for(var i=1;i<pts.length-1;i++){var dd=Math.abs(dy*pts[i][0]-dx*pts[i][1]+b[0]*a[1]-b[1]*a[0])/L;if(dd>best){best=dd;bi=i;}}
   if(best>eps){var l=ecRdp(pts.slice(0,bi+1),eps),r=ecRdp(pts.slice(bi),eps);return l.slice(0,-1).concat(r);}return [a,b];}
+function ecSmooth(P,it){ /* round121：Chaikin（かどを まるく）。はじめと おわりの 点は そのまま。とじた 線は とじたまま */
+  var cl=Math.hypot(P[0][0]-P[P.length-1][0],P[0][1]-P[P.length-1][1])<0.5;
+  for(var r=0;r<it;r++){var Q=[];if(!cl)Q.push(P[0]);var n=P.length-1;
+    for(var i=0;i<n;i++){var a=P[i],b=P[i+1];Q.push([a[0]*0.75+b[0]*0.25,a[1]*0.75+b[1]*0.25]);Q.push([a[0]*0.25+b[0]*0.75,a[1]*0.25+b[1]*0.75]);}
+    if(cl)Q.push(Q[0].slice());else Q.push(P[n]);P=Q;}
+  return P;}
 function ecPack(D,eps,q){var o=[];
   function v(n){n=Math.round(+n||0);n=n<0?(-n*2-1):n*2;while(n>=128){o.push((n&127)|128);n=Math.floor(n/128);}o.push(n);}
   function str(t){var b=new TextEncoder().encode(String(t||'').slice(0,20));v(b.length);for(var i=0;i<b.length;i++)o.push(b[i]);}
@@ -271,6 +278,7 @@ function ecUnpack(u){var i=0;
   for(var k=0;k<n&&k<400;k++){var cb=byte(),ci=cb&63,col=EC_PAL[ci]||'#2a2a36';if(ci===63){var r=byte(),g=byte(),b=byte();col='#'+[r,g,b].map(function(x){return ('0'+x.toString(16)).slice(-2);}).join('');}
     if(cb&128){list.push({fill:true,color:col,x:v()*q,y:v()*q});continue;}
     var size=v(),np=v(),pts=[],lx=0,ly=0;for(var j=0;j<np&&j<4000;j++){lx+=v();ly+=v();pts.push([lx*q,ly*q]);}if(!pts.length)pts=[[0,0]];
+    if(q>=2&&pts.length>=3)pts=ecSmooth(pts,q>=4?3:2); /* round121：あらく つめた 線を なめらかに */
     list.push({color:col,size:Math.max(2,Math.min(60,size)),pts:pts,erase:!!(cb&64)});}
   if(i<u.length){try{D.pw=v()/10;D.sn=str();}catch(e){}}if(i<u.length){try{D.no=v();D.fl=v();}catch(e){}}D.strokes=list;return D;}
 function ecDecode(hash){var h=String(hash||'').replace(/^#/,'');if(h.charAt(0)!=='1')return Promise.reject(new Error('fmt'));
@@ -283,11 +291,11 @@ window.addEventListener('hashchange',function(){location.reload();});
   ecDecode(location.hash).then(function(D){
     if(!TYPES[D.t])D.t='hen';if(!ATTR[D.a])D.a='kira';
     // 絵：線をもとどおりに描いて、まわりの空白を切りとる（ゲームと同じ）
-    var src=document.createElement('canvas');src.width=600;src.height=600;var x=src.getContext('2d',{willReadFrequently:true});
+    var EK=3,EW=600*EK;var src=document.createElement('canvas');src.width=EW;src.height=EW;var x=src.getContext('2d',{willReadFrequently:true});x.scale(EK,EK); /* round121：3ばいで 描いて ギザギザを なくす */
     D.strokes.forEach(function(s){try{drawStrokeOn(x,s);}catch(e){}});
-    var px=x.getImageData(0,0,600,600).data,x0=600,y0=600,x1=-1,y1=-1;
-    for(var y=0;y<600;y++)for(var xx=0;xx<600;xx++)if(px[(y*600+xx)*4+3]>16){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(y<y0)y0=y;if(y>y1)y1=y;}
-    if(x1<0){x0=y0=0;x1=y1=599;}x0=Math.max(0,x0-2);y0=Math.max(0,y0-2);x1=Math.min(599,x1+2);y1=Math.min(599,y1+2);
+    var px=x.getImageData(0,0,EW,EW).data,x0=EW,y0=EW,x1=-1,y1=-1;
+    for(var y=0;y<EW;y+=EK)for(var xx=0;xx<EW;xx+=EK)if(px[(y*EW+xx)*4+3]>16){if(xx<x0)x0=xx;if(xx>x1)x1=xx;if(y<y0)y0=y;if(y>y1)y1=y;}
+    if(x1<0){x0=y0=0;x1=y1=EW-1;}x0=Math.max(0,x0-2*EK);y0=Math.max(0,y0-2*EK);x1=Math.min(EW-1,x1+3*EK);y1=Math.min(EW-1,y1+3*EK);
     var cr=document.createElement('canvas');cr.width=x1-x0+1;cr.height=y1-y0+1;cr.getContext('2d').drawImage(src,x0,y0,cr.width,cr.height,0,0,cr.width,cr.height);
     var st={};STAT_KEYS.forEach(function(k,i){st[k]=clamp(D.st[i]|0,0,7);});
     ship={type:D.t,attr:D.a,name:D.nm,epithet:D.ep,stats:st,canvas:cr,w:cr.width,h:cr.height,pmul:D.pw||1,secName:D.sn||'',serial:D.no||0,newRec:!!((D.fl|0)&1)};
