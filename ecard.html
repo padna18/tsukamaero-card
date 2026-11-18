@@ -40,15 +40,15 @@ var $=function(id){return document.getElementById(id);};
 function clamp(v,a,b){return v<a?a:v>b?b:v;}
 var STAT_KEYS=['spd','beam','chg','pow','luck'];
 var TYPES={
-  cute:  {name:'どうぶつ型',emoji:'🐾',color:'#ff7eb6',speed:330,radius:74,skill:'なかよしコール',desc:'まわりの動物が、自分のUFOについてくる'},
-  sweets:{name:'たべもの型',emoji:'🍰',color:'#ffb38a',speed:335,radius:70,skill:'おかしのわな',desc:'ケーキを置くと動物が集まって食べはじめる'},
-  ninja: {name:'ヒーロー型',emoji:'🦸',color:'#7a80b8',speed:345,radius:64,skill:'ぶんしん',desc:'分身が2体あらわれて、いっしょに動物をつかまえる'},
-  kaiju: {name:'かいじゅう型',emoji:'🦖',color:'#3bb273',speed:330,radius:72,skill:'ガオーッ',desc:'ほえて、まわりの動物をびっくりさせて少しのあいだ止める'},
-  nature:{name:'しぜん型',emoji:'🌱',color:'#4cd37a',speed:335,radius:70,skill:'にょきにょき',desc:'まわりに動物が生まれる。少しのあいだ自分だけのもの'},
-  sports:{name:'あそび型',emoji:'⚽',color:'#ff9f3a',speed:340,radius:68,skill:'ナイスシュート',desc:'動物がいちばん多いところへシュート！当たった動物をつかまえる'},
-  space: {name:'うちゅう型',emoji:'🪐',color:'#7d8bff',speed:335,radius:70,skill:'ブラックホール',desc:'UFOの下にブラックホールができて、まわりの動物をぐるぐるすいこむ'},
-  mecha: {name:'メカ型',emoji:'🤖',color:'#9fc3e0',speed:320,radius:66,skill:'ロックオン',desc:'近くの動物9〜11匹をロックオンして、自動でつかまえる'},
-  hen:   {name:'ナゾ型',emoji:'❓',color:'#7dff9a',speed:340,radius:70,skill:'なにが出るかな',desc:'毎回ちがう型の能力がランダムで出る'}
+  cute:  {name:'どうぶつタイプ',emoji:'🐾',color:'#ff7eb6',speed:330,radius:74,skill:'なかよしコール',desc:'まわりの動物が、自分のUFOについてくる'},
+  sweets:{name:'たべものタイプ',emoji:'🍰',color:'#ffb38a',speed:335,radius:70,skill:'おかしのわな',desc:'ケーキを置くと動物が集まって食べはじめる'},
+  ninja: {name:'ヒーロータイプ',emoji:'🦸',color:'#7a80b8',speed:345,radius:64,skill:'ぶんしん',desc:'分身が2体あらわれて、いっしょに動物をつかまえる'},
+  kaiju: {name:'かいじゅうタイプ',emoji:'🦖',color:'#3bb273',speed:330,radius:72,skill:'ガオーッ',desc:'ほえて、まわりの動物をびっくりさせて少しのあいだ止める'},
+  nature:{name:'しぜんタイプ',emoji:'🌱',color:'#4cd37a',speed:335,radius:70,skill:'にょきにょき',desc:'まわりに動物が生まれる。少しのあいだ自分だけのもの'},
+  sports:{name:'あそびタイプ',emoji:'⚽',color:'#ff9f3a',speed:340,radius:68,skill:'ナイスシュート',desc:'動物がいちばん多いところへシュート！当たった動物をつかまえる'},
+  space: {name:'うちゅうタイプ',emoji:'🪐',color:'#7d8bff',speed:335,radius:70,skill:'ブラックホール',desc:'UFOの下にブラックホールができて、まわりの動物をぐるぐるすいこむ'},
+  mecha: {name:'メカタイプ',emoji:'🤖',color:'#9fc3e0',speed:320,radius:66,skill:'ロックオン',desc:'近くの動物9〜11匹をロックオンして、自動でつかまえる'},
+  hen:   {name:'ナゾタイプ',emoji:'❓',color:'#7dff9a',speed:340,radius:70,skill:'なにが出るかな',desc:'毎回ちがうタイプの能力がランダムで出る'}
 };
 var ATTR={
   fire:   {name:'ホノオ',  emoji:'🔥',color:'#ff6a2f',stat:'beam',bonus:'ほのおのいきおい',desc:'のうりょく中、速さとビームが少しアップ'},
@@ -58,7 +58,7 @@ var ATTR={
   light:  {name:'ヒカリ',  emoji:'✨',color:'#fff1a8',stat:'chg', bonus:'ひかりのみちびき',desc:'のうりょく発動で、色ちがいの動物を2匹よぶ'},
   dream:  {name:'ドリーム',emoji:'🌸',color:'#ff8fd6',stat:'beam',bonus:'ゆめごこち',      desc:'のうりょく中、つかまえた点数が1.25倍'},
   shadow: {name:'シャドウ',emoji:'🌑',color:'#8a7bb0',stat:'spd', bonus:'かげがくれ',      desc:'のうりょく中、動物がにげなくなる'},
-  kira:   {name:'キラキラ',emoji:'🌈',color:'#ffe04a',stat:'luck',bonus:'なにかがキラリ',  desc:'のうりょく発動のたびに、ほかの属性のおまけがランダムで出る'}
+  kira:   {name:'キラキラ',emoji:'🌈',color:'#ffe04a',stat:'luck',bonus:'なにかがキラリ',  desc:'のうりょく発動のたびに、ほかのパワーのおまけがランダムで出る'}
 };
 function hexRgb(h){return [parseInt(h.substr(1,2),16),parseInt(h.substr(3,2),16),parseInt(h.substr(5,2),16)];}
 function floodFill(ctx,sx,sy,hex,lim){
@@ -153,8 +153,8 @@ function drawCard(){   // トレカの大きさ 63×88mm（630×880）
   // ===== round90：下半分（文字を へらして すっきり） =====
   var lx=46,rx=Wc-46,y0=wy+wh+34,MUT=LEG?'#a98c4f':'#a59bd6',LINE=LEG?'rgba(184,138,46,.3)':'#ece7ff',TXT=LEG?'#4a3410':INK;
   // タイプ（色のピル）＋ ぞくせい（小さい ピル）
-  c.font='28px '+F;var tt=(LEG?'':T.emoji+' ')+T.name,tw=c.measureText(tt).width+40;if(LEG){c.save();c.strokeStyle=GOLD(lx,0,lx+tw,0);c.lineWidth=2;rr(lx+1,y0+1,tw-2,48,24);c.fillStyle=GOLD(lx,y0,lx+tw,y0+50);rr(lx+1,y0+1,tw-2,48,24);c.fill();c.stroke();c.fillStyle='#3a2606';c.fillText(tt,lx+20,y0+35);c.restore();}else{c.fillStyle=T.color;rr(lx,y0,tw,50,25);c.fill();c.fillStyle='#fff';c.fillText(tt,lx+20,y0+35);}
-  if(A){c.font='900 17px '+FB;var at=(LEG?'':A.emoji+' ')+A.name,aw=c.measureText(at).width+28;c.fillStyle=LEG?'rgba(214,170,80,.16)':'#f4f1ff';rr(lx+tw+10,y0+9,aw,32,16);c.fill();c.fillStyle=TXT;c.fillText(at,lx+tw+24,y0+31);}
+  var tt=(LEG?'':T.emoji+' ')+T.name,atx=A?(LEG?'':A.emoji+' ')+A.name+'パワー':'',RB0=UL?'ULTIMATE':LEG?'LEGEND':SIL?'RARE':null,lim=rx,tf=28,af=17;if(RB0){c.save();c.font='26px '+F;if('letterSpacing' in c)c.letterSpacing='2px';lim=rx-(Math.max(c.measureText(RB0).width,70)+36)-12;c.restore();}for(var fi=0;fi<20;fi++){c.font=tf+'px '+F;var w1=c.measureText(tt).width+40;c.font='900 '+af+'px '+FB;var w2=A?c.measureText(atx).width+38:0;if(lx+w1+w2<=lim||tf<=19)break;tf-=1;if(af>13)af-=0.5;}c.font=tf+'px '+F;var tw=c.measureText(tt).width+40;if(LEG){c.save();c.strokeStyle=GOLD(lx,0,lx+tw,0);c.lineWidth=2;rr(lx+1,y0+1,tw-2,48,24);c.fillStyle=GOLD(lx,y0,lx+tw,y0+50);rr(lx+1,y0+1,tw-2,48,24);c.fill();c.stroke();c.fillStyle='#3a2606';c.fillText(tt,lx+20,y0+35);c.restore();}else{c.fillStyle=T.color;rr(lx,y0,tw,50,25);c.fill();c.fillStyle='#fff';c.fillText(tt,lx+20,y0+35);}
+  if(A){c.font='900 '+af+'px '+FB;var at=atx,aw=c.measureText(at).width+28;c.fillStyle=LEG?'rgba(214,170,80,.16)':'#f4f1ff';rr(lx+tw+10,y0+9,aw,32,16);c.fill();c.fillStyle=TXT;c.fillText(at,lx+tw+24,y0+31);}
   var RB=UL?['ULTIMATE','さいきょう']:LEG?['LEGEND','でんせつ']:SIL?['RARE','レア']:null;
   if(RB){c.save();c.font='26px '+F;if('letterSpacing' in c)c.letterSpacing='2px';var rbw=Math.max(c.measureText(RB[0]).width,70)+36,rbh=58,rbx=rx-rbw,rby=y0-6,rbg=c.createLinearGradient(rbx,rby,rbx+rbw,rby+rbh);
     if(UL){['#ff5f9e','#ffb000','#4cd37a','#3fb6ff','#a77bff'].forEach(function(cc,ii){rbg.addColorStop(ii/4,cc);});}else if(LEG){rbg.addColorStop(0,'#fff3c2');rbg.addColorStop(0.45,'#f0c45a');rbg.addColorStop(1,'#a8741c');}else{rbg.addColorStop(0,'#ffffff');rbg.addColorStop(0.5,'#cfd4e2');rbg.addColorStop(1,'#8a92a8');}
@@ -193,7 +193,7 @@ function drawCard(){   // トレカの大きさ 63×88mm（630×880）
     var m=Math.max(5,n),sp=Math.min(16,(cw-14)/(m-0.6)),x0=cxs-sp*(m-1)/2;for(var j=0;j<m;j++){c.globalAlpha=j<n?1:0.18;star4(x0+j*sp,ty+52,7.5,j>=5?['#ff4fa3','#3fb6ff','#4cd37a'][j%3]:'#ffb000');}c.globalAlpha=1;});
   // round100：つかまえた動物の列は なくした（絵を 大きく するため）
   // した：日付だけ
-  var d=CARD_DATE;c.fillStyle=LEG?(UL?'#b9a8e6':'#8f7a45'):SIL?'#9aa1b6':'#c3bbe6';c.font='800 13px '+FB;c.textAlign='center';c.save();if('letterSpacing' in c)c.letterSpacing='2px';c.fillText((SER?'No.'+('000'+SER).slice(-4)+'  ·  ':'')+d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate(),Wc/2,Hc-30);c.restore();c.textAlign='left';
+  var d=CARD_DATE;c.fillStyle=LEG?(UL?'#b9a8e6':'#8f7a45'):SIL?'#9aa1b6':'#c3bbe6';c.font='800 13px '+FB;c.textAlign='center';c.save();if('letterSpacing' in c)c.letterSpacing='2px';c.fillText(d.getFullYear()+'.'+(d.getMonth()+1)+'.'+d.getDate(),Wc/2,Hc-30);c.restore();c.textAlign='left';
   if(LEG){c.save();rr(22,22,Wc-44,Hc-44,21);c.clip();c.globalCompositeOperation='soft-light';var hg=c.createLinearGradient(0,0,Wc,Hc);['#ff5f9e','#ffd23f','#4cd37a','#3fb6ff','#a77bff','#ff5f9e'].forEach(function(cc,ii){hg.addColorStop(ii/5,cc);});c.globalAlpha=UL?0.5:0.32;c.fillStyle=hg;c.fillRect(0,0,Wc,Hc);
     c.globalCompositeOperation='screen';c.globalAlpha=UL?0.24:0.14;var sg=c.createLinearGradient(Wc*0.15,0,Wc*0.85,Hc);sg.addColorStop(0.40,'rgba(255,255,255,0)');sg.addColorStop(0.5,'rgba(255,255,255,1)');sg.addColorStop(0.60,'rgba(255,255,255,0)');c.fillStyle=sg;c.fillRect(0,0,Wc,Hc);c.restore();}
 }
